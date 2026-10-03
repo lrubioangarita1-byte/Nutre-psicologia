@@ -5,7 +5,7 @@ import { getPack } from "./packs";
 import type { CaseInfo } from "./email";
 import type { Responses, Scores } from "./instruments";
 
-export const CONSENT_VERSION = "2026-10-v1";
+export const CONSENT_VERSION = "2026-10-v2";
 
 export type Submission = {
   id: string;
@@ -23,6 +23,8 @@ export type Submission = {
   fecha_creacion: string;
   pagado_at: string | null;
   completado_at: string | null;
+  iniciado_at: string | null;
+  aceptacion: { version: string; fecha: string; documentos: string[]; ip: string | null; user_agent: string | null } | null;
 };
 
 export function newAccessToken() {

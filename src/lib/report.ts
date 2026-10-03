@@ -2,7 +2,7 @@
  * Borrador automático del informe (misma lógica del generador interno de informes)
  * y plantilla HTML del correo que recibe el cliente.
  */
-import { IPIP_DOMAINS, MAX_SCORE, TMMS_DIMS, bandIpip, bandTmms, type Scores, type TmmsDim } from "./instruments";
+import { IPIP_DOMAINS, MAX_SCORE, TMMS_DIMS, bandIpip, bandTmms, ipipDetail, type Scores, type TmmsDim } from "./instruments";
 import { PACKS, RISKY, pct, type PackId } from "./packs";
 import { BRAND } from "./brand";
 
@@ -112,8 +112,15 @@ export function pickExercises(packId: PackId, s: Scores): Exercise[] {
     if (ros <= 29) keys.push("registroLogros", "autocompasion");
     if (re <= 29) keys.push("diarioEmociones");
     keys.push("general_autocuidado");
-  } else if (packId === "tdah") {
+  } else if (packId === "tdah" || packId === "atencion") {
     keys = ["pomodoroTDAH", "recordatoriosExternos", "movimientoPrevio"];
+  } else if (packId === "emocional") {
+    const t = s.tmms24;
+    if (t && t.reparacion <= 29) keys.push("stop");
+    if (t && (t.claridad <= 29 || t.atencion <= 16)) keys.push("diarioEmociones");
+    keys.push("respiracion478", "general_autocuidado");
+  } else if (packId === "personalidad") {
+    keys = ["diarioEmociones", "registroLogros", "general_autocuidado"];
   }
   const unique = [...new Set(keys)];
   // Completar hasta 3 con ejercicios generales que no se repitan
@@ -169,7 +176,7 @@ export function buildReportDraft(input: {
     const d = s.ipip50!, t = s.tmms24!, ros = s.rosenberg!;
     instruments.push({
       title: "IPIP-50 — Los cinco grandes",
-      lines: IPIP_DOMAINS.map((label, i) => ({ label, score: `${d[i]} / 50`, pct: pct(d[i], 50), risky: false, band: bandIpip(d[i]), tip: "" })),
+      lines: IPIP_DOMAINS.map((label, i) => ({ label, score: `${d[i]} / 50`, pct: pct(d[i], 50), risky: false, band: bandIpip(d[i]), tip: ipipDetail(i, d[i]) })),
     });
     instruments.push(tmmsBlock(t));
     instruments.push(single("Rosenberg — Autoestima", ros, 40, bandRosenberg(ros), RISKY.rosenberg(ros), tipRosenberg(ros)));
@@ -194,6 +201,23 @@ export function buildReportDraft(input: {
       });
     }
     tips = [asrs >= 4 || wurs >= 46 ? "El patrón combinado (actual + retrospectivo) sugiere valorar una evaluación diagnóstica completa de TDAH." : "No se identifica un patrón claro de TDAH en este tamizaje."];
+  } else if (packId === "atencion") {
+    const asrs = s.asrs!;
+    instruments.push(single("ASRS v1.1 — Tamizaje de atención en adultos", asrs, 6, bandASRS(asrs), RISKY.asrs(asrs), tipASRS(asrs)));
+    tips = [asrs >= 4
+      ? "Los síntomas actuales justifican una evaluación más completa de TDAH en adultos, que incluya la historia desde la infancia y el impacto funcional."
+      : "No se alcanza el umbral de este tamizaje; si las dificultades de atención afectan el día a día, conviene explorarlas en consulta."];
+  } else if (packId === "personalidad") {
+    const d = s.ipip50!;
+    instruments.push({
+      title: "IPIP-50 — Los cinco grandes",
+      lines: IPIP_DOMAINS.map((label, i) => ({ label, score: `${d[i]} / 50`, pct: pct(d[i], 50), risky: false, band: bandIpip(d[i]), tip: ipipDetail(i, d[i]) })),
+    });
+    tips = ["Perfil de personalidad orientativo para autoconocimiento: ningún rasgo es positivo o negativo en sí mismo; su valor depende del contexto y de los objetivos personales."];
+  } else if (packId === "emocional") {
+    const t = s.tmms24!;
+    instruments.push(tmmsBlock(t));
+    tips = TMMS_DIMS.map(([k]) => tipTMMS(k, t[k]));
   }
 
   return {

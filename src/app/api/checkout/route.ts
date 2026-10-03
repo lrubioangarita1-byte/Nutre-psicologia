@@ -29,14 +29,32 @@ export async function POST(req: Request) {
 
   if (nombre.length < 2) return NextResponse.json({ error: "Escribe tu nombre completo" }, { status: 400 });
   if (!EMAIL_RE.test(correo)) return NextResponse.json({ error: "Escribe un correo válido" }, { status: 400 });
-  if (body.consentimiento !== true || body.mayorDeEdad !== true || body.tratamientoDatos !== true)
-    return NextResponse.json({ error: "Debes aceptar el consentimiento, la política de datos y confirmar que eres mayor de edad" }, { status: 400 });
+  if (body.consentimiento !== true || body.mayorDeEdad !== true || body.tratamientoDatos !== true || body.datosSensibles !== true)
+    return NextResponse.json({ error: "Debes aceptar el consentimiento, los términos, la política de datos (incluidos datos sensibles) y confirmar que eres mayor de edad" }, { status: 400 });
   if (pack.clinical && body.addendumClinico !== true)
     return NextResponse.json({ error: "Debes aceptar el addendum del consentimiento para packs clínicos" }, { status: 400 });
 
   const providers = enabledProviders();
   if (!(proveedor === "wompi" && providers.wompi) && !(proveedor === "stripe" && providers.stripe) && !(proveedor === "prueba" && providers.bypass))
     return NextResponse.json({ error: "Medio de pago no disponible" }, { status: 400 });
+
+  const now = new Date().toISOString();
+  const aceptacion = {
+    version: CONSENT_VERSION,
+    fecha: now,
+    documentos: [
+      "consentimiento_informado",
+      "terminos_y_condiciones",
+      "inicio_ejecucion_sin_retracto",
+      "politica_tratamiento_datos",
+      "autorizacion_datos_sensibles",
+      "transmision_internacional",
+      "mayor_de_edad",
+      ...(pack.clinical ? ["addendum_clinico_protocolo_riesgo"] : []),
+    ],
+    ip: (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || req.headers.get("x-real-ip"),
+    user_agent: req.headers.get("user-agent"),
+  };
 
   const token = newAccessToken();
   const { data: sub, error: subErr } = await db()
@@ -49,7 +67,8 @@ export async function POST(req: Request) {
       cliente_whatsapp: whatsapp || null,
       remitido_por: remitidoPor || null,
       consentimiento_version: CONSENT_VERSION,
-      consentimiento_aceptado_at: new Date().toISOString(),
+      consentimiento_aceptado_at: now,
+      aceptacion,
     })
     .select("id")
     .single();

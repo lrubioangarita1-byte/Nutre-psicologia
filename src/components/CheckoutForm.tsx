@@ -30,6 +30,7 @@ export function CheckoutForm({ packId, clinical, priceUsd, priceCop, providers }
       remitidoPor: f.get("remitidoPor"),
       consentimiento: f.get("consentimiento") === "on",
       tratamientoDatos: f.get("tratamientoDatos") === "on",
+      datosSensibles: f.get("datosSensibles") === "on",
       mayorDeEdad: f.get("mayorDeEdad") === "on",
       addendumClinico: !clinical || f.get("addendumClinico") === "on",
     };
@@ -57,7 +58,7 @@ export function CheckoutForm({ packId, clinical, priceUsd, priceCop, providers }
     <form onSubmit={onSubmit}>
       <label className="consent-check">
         <input type="checkbox" name="consentimiento" required />
-        <span>He leído y acepto el <Link href="/legal/consentimiento" target="_blank">consentimiento informado</Link> y los <Link href="/legal/terminos" target="_blank">términos y condiciones</Link>.</span>
+        <span>He leído y acepto el <Link href="/legal/consentimiento" target="_blank">consentimiento informado</Link> y los <Link href="/legal/terminos" target="_blank">términos y condiciones</Link>. Entiendo que el servicio empieza a ejecutarse cuando respondo la primera pregunta, y que desde ese momento no aplica el derecho de retracto.</span>
       </label>
       {clinical && (
         <label className="consent-check">
@@ -67,7 +68,11 @@ export function CheckoutForm({ packId, clinical, priceUsd, priceCop, providers }
       )}
       <label className="consent-check">
         <input type="checkbox" name="tratamientoDatos" required />
-        <span>Autorizo el tratamiento de mis datos personales, incluidos datos sensibles de salud, según la <Link href="/legal/privacidad" target="_blank">Política de Tratamiento de Datos</Link> (Ley 1581 de 2012).</span>
+        <span>Autorizo el tratamiento de mis datos personales según la <Link href="/legal/privacidad" target="_blank">Política de Tratamiento de Datos</Link> (Ley 1581 de 2012), incluida su transmisión a proveedores tecnológicos con servidores fuera de Colombia.</span>
+      </label>
+      <label className="consent-check">
+        <input type="checkbox" name="datosSensibles" required />
+        <span>Autorizo de forma expresa el tratamiento de mis <b>datos sensibles de salud</b> (respuestas, resultados e informe) para las finalidades de la política. Sé que no estoy obligado/a a autorizarlo, pero que sin esa autorización no es posible prestar el servicio.</span>
       </label>
       <label className="consent-check">
         <input type="checkbox" name="mayorDeEdad" required />

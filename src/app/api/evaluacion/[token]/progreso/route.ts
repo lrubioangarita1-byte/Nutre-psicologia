@@ -15,5 +15,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ token: string 
   const body = await req.json().catch(() => ({}));
   const respuestas = sanitizeResponses(pack, body.respuestas);
   await db().from("submissions").update({ respuestas }).eq("id", sub.id).eq("estado", "en_progreso");
+  // Primera respuesta guardada: el servicio empezó a ejecutarse (relevante para el derecho de retracto).
+  await db().from("submissions").update({ iniciado_at: new Date().toISOString() }).eq("id", sub.id).is("iniciado_at", null);
   return NextResponse.json({ ok: true });
 }

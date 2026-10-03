@@ -29,9 +29,12 @@ export type PackId =
   | "tdah"
   | "vocacional"
   | "autismo"
-  | "seleccion";
+  | "seleccion"
+  | "atencion"
+  | "personalidad"
+  | "emocional";
 
-export type PackGroup = "autoconocimiento" | "tamizaje" | "empresas";
+export type PackGroup = "autoconocimiento" | "tamizaje" | "empresas" | "suelta";
 
 export type Pack = {
   id: PackId;
@@ -50,6 +53,9 @@ export type Pack = {
   edResource?: boolean;
 };
 
+/** Pruebas sueltas: un solo instrumento. */
+const SINGLE_PRICE = { priceUsd: 3, priceCop: 12000 };
+
 export const PACKS: Record<PackId, Pack> = {
   ansiedad: {
     id: "ansiedad",
@@ -59,7 +65,7 @@ export const PACKS: Record<PackId, Pack> = {
     description: "Para entender qué tanto te está pesando el día a día, y con qué recursos cuentas para manejarlo.",
     includes: ["GAD-7 (ansiedad)", "PSS-10 (estrés percibido)", "TMMS-24 (regulación emocional)"],
     priceUsd: 9,
-    priceCop: 36000,
+    priceCop: 30000,
     status: "disponible",
     instruments: [GAD7, PSS10, TMMS24],
     clinical: true,
@@ -72,7 +78,7 @@ export const PACKS: Record<PackId, Pack> = {
     description: "Un retrato de tu personalidad, tu inteligencia emocional y tu autoestima.",
     includes: ["IPIP-50 Big Five (personalidad)", "TMMS-24 (inteligencia emocional)", "Escala de Rosenberg (autoestima)"],
     priceUsd: 9,
-    priceCop: 36000,
+    priceCop: 30000,
     status: "disponible",
     instruments: [IPIP50, TMMS24, ROSENBERG],
     clinical: true,
@@ -85,7 +91,7 @@ export const PACKS: Record<PackId, Pack> = {
     description: "Para quien está eligiendo carrera o valorando un cambio profesional.",
     includes: ["Intereses profesionales", "IPIP Big Five (personalidad)", "Escala de valores"],
     priceUsd: 12,
-    priceCop: 48000,
+    priceCop: 40000,
     status: "proximamente",
     instruments: [],
     clinical: false,
@@ -98,7 +104,7 @@ export const PACKS: Record<PackId, Pack> = {
     description: "Tamizaje orientativo de actitudes y conductas alimentarias de riesgo. No es un diagnóstico.",
     includes: ["EAT-26", "SCOFF", "Pregunta de seguridad incluida"],
     priceUsd: 9,
-    priceCop: 36000,
+    priceCop: 30000,
     status: "disponible",
     instruments: [EAT26, SCOFF],
     clinical: true,
@@ -112,7 +118,7 @@ export const PACKS: Record<PackId, Pack> = {
     description: "Síntomas actuales y retrospectivos desde la infancia. Puerta de entrada a una evaluación completa si aplica.",
     includes: ["ASRS v1.1 (OMS)", "WURS-25 (síntomas de infancia)", "Prueba breve de atención"],
     priceUsd: 10,
-    priceCop: 40000,
+    priceCop: 35000,
     status: "disponible",
     instruments: [ASRS, WURS25, CPT],
     clinical: true,
@@ -125,7 +131,7 @@ export const PACKS: Record<PackId, Pack> = {
     description: "Tamizaje de rasgos del espectro autista, como puerta de entrada a una evaluación diagnóstica completa.",
     includes: ["AQ-10", "AQ-50"],
     priceUsd: 10,
-    priceCop: 40000,
+    priceCop: 35000,
     status: "proximamente",
     instruments: [],
     clinical: true,
@@ -143,12 +149,49 @@ export const PACKS: Record<PackId, Pack> = {
     instruments: [],
     clinical: false,
   },
+  atencion: {
+    id: "atencion",
+    name: "Tamizaje de atención en adultos",
+    eyebrow: "PRUEBA SUELTA",
+    group: "suelta",
+    description: "Cuestionario orientativo de la OMS (ASRS v1.1). No es un diagnóstico.",
+    includes: ["ASRS v1.1 (OMS)", "~5 min"],
+    ...SINGLE_PRICE,
+    status: "disponible",
+    instruments: [ASRS],
+    clinical: true,
+  },
+  personalidad: {
+    id: "personalidad",
+    name: "Personalidad (IPIP Big Five)",
+    eyebrow: "PRUEBA SUELTA",
+    group: "suelta",
+    description: "Tus cinco grandes rasgos de personalidad.",
+    includes: ["IPIP-50 Big Five", "~15 min"],
+    ...SINGLE_PRICE,
+    status: "disponible",
+    instruments: [IPIP50],
+    clinical: false,
+  },
+  emocional: {
+    id: "emocional",
+    name: "Inteligencia emocional (TMMS-24)",
+    eyebrow: "PRUEBA SUELTA",
+    group: "suelta",
+    description: "Cómo percibes, comprendes y regulas tus emociones.",
+    includes: ["TMMS-24", "~10 min"],
+    ...SINGLE_PRICE,
+    status: "disponible",
+    instruments: [TMMS24],
+    clinical: false,
+  },
 };
 
 export const PACK_GROUPS: { id: PackGroup; label: string; packs: PackId[] }[] = [
   { id: "autoconocimiento", label: "Autoconocimiento y decisiones", packs: ["ansiedad", "quiensoy", "vocacional"] },
   { id: "tamizaje", label: "Tamizaje clínico especializado", packs: ["alimentacion", "tdah", "autismo"] },
   { id: "empresas", label: "Para empresas y RR. HH.", packs: ["seleccion"] },
+  { id: "suelta", label: "¿Prefieres solo una prueba?", packs: ["atencion", "personalidad", "emocional"] },
 ];
 
 export function getPack(id: string): Pack | null {
@@ -206,6 +249,23 @@ export function preliminarySummary(packId: PackId, c: Scores): string {
       if (asrsPos || wursPos)
         return `**Lectura preliminar:** se identifican algunas señales (${asrsPos ? "síntomas actuales" : "síntomas desde la infancia"}), pero no en ambos momentos de tu vida.${cpt} Esto no descarta nada, pero sí sugiere profundizar con más cuidado antes de sacar conclusiones.${tail}`;
       return `**Lectura preliminar:** no se identifica un patrón claro de TDAH ni en tus síntomas actuales ni en los de tu infancia, según este tamizaje.${cpt}`;
+    }
+    case "atencion": {
+      const tail = "\n\nEsta es una lectura automática inicial — Laura la retoma con más detalle en tu informe.";
+      return c.asrs! >= 4
+        ? `**Lectura preliminar:** marcaste **${c.asrs} de 6** indicadores clave de dificultades de atención en la vida adulta. Esto es compatible con síntomas actuales relevantes y amerita profundizar con una evaluación más completa — por ejemplo, el pack de TDAH en adultos, que también revisa tu historia desde la infancia.${tail}`
+        : `**Lectura preliminar:** marcaste **${c.asrs} de 6** indicadores clave, por debajo del umbral de este tamizaje. Si aun así sientes que la atención te está costando en el día a día, vale la pena conversarlo con un profesional.${tail}`;
+    }
+    case "personalidad": {
+      const dom = c.ipip50!;
+      const names = ["extraversión", "amabilidad", "responsabilidad", "estabilidad emocional", "apertura"];
+      const top = names[dom.indexOf(Math.max(...dom))];
+      const low = names[dom.indexOf(Math.min(...dom))];
+      return `**Lectura preliminar:** tu rasgo más marcado es **${top}** y el menos marcado es **${low}**. Ningún rasgo es "bueno" o "malo": cada combinación trae fortalezas distintas según el contexto.\n\nEsta es una lectura automática inicial — en tu informe, Laura interpreta tu perfil completo.`;
+    }
+    case "emocional": {
+      const t = c.tmms24!;
+      return `**Lectura preliminar:** tu atención emocional es **${bandTmms(t.atencion).toLowerCase()}**, tu claridad emocional es **${bandTmms(t.claridad).toLowerCase()}** y tu capacidad de regular tus emociones es **${bandTmms(t.reparacion).toLowerCase()}**.\n\nEsta es una lectura automática inicial — en tu informe, Laura cruza estas tres dimensiones y te da recomendaciones concretas.`;
     }
     default:
       return "";

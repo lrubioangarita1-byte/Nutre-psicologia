@@ -9,7 +9,7 @@ Plataforma de evaluación psicológica online: el cliente paga, responde un pack
 - **Landing** con catálogo de packs (marca: oliva `#5B5120`, palo rosa `#DEACA9`, crema `#FCEFDC`, coral `#EF6328`; Playfair Display + Quicksand).
 - **Compra**: consentimiento informado (+ addendum clínico), autorización de datos (Ley 1581), mayoría de edad, datos del cliente y pago con Wompi o Stripe. El acceso solo se habilita con el pago verificado en la API de la pasarela (retorno + webhook, idempotente, valida monto y moneda).
 - **Motor de preguntas** uno por uno, con intro por instrumento, guardado automático del avance y enlace por correo para retomar.
-- **4 packs**: Ansiedad y estrés (GAD-7, PSS-10, TMMS-24), Alimentación (EAT-26, SCOFF), Quién soy (IPIP-50, TMMS-24, Rosenberg), TDAH (ASRS v1.1, WURS-25, prueba breve de atención). Vocacional, Autismo y Selección de personal se muestran como "Próximamente"/"Solicitar".
+- **4 packs** (Ansiedad y estrés, Quién soy, Alimentación: $9 USD / $30.000 COP; TDAH: $10 USD / $35.000 COP) y **3 pruebas sueltas** (ASRS, IPIP-50, TMMS-24: $3 USD / $12.000 COP). Vocacional, Autismo y Selección de personal se muestran como "Próximamente"/"Solicitar".
 - **Puntajes calculados en el servidor** (`src/lib/instruments.ts`), lectura preliminar en pantalla y borrador automático del informe (`src/lib/report.ts`, misma lógica del generador interno: bandas, consejos, interpretación integrada, 3 ejercicios).
 - **Protocolo de riesgo**: la respuesta a la pregunta de seguridad se guarda en el momento; si es "Sí" → mensaje de crisis inmediato (Línea 192 opción 4) + correo URGENTE a Laura. Umbrales elevados (GAD-7 ≥15, PSS-10 ≥27, EAT-26 ≥20, SCOFF ≥2, ASRS ≥4, WURS-25 ≥46) → correo prioritario. Todo queda en `risk_events` con fecha/hora; esa tabla no permite borrar ni alterar registros.
 - **Panel `/admin`** (Supabase Auth): pendientes ordenados por urgencia (crisis → elevado → normal, el más antiguo primero), detalle del caso, registro de eventos de riesgo ("marcar como atendido"), respuestas ítem por ítem, editor del informe con vista previa y botón **Aprobar y enviar** (envía el correo real con Resend).
@@ -17,7 +17,7 @@ Plataforma de evaluación psicológica online: el cliente paga, responde un pack
 
 ## Puesta en marcha
 
-1. **Supabase**: crear proyecto → SQL Editor → ejecutar `supabase/migrations/0001_init.sql`. En Authentication → Users, crear el usuario de Laura (correo + contraseña) y desactivar registros públicos (Authentication → Sign In / Providers → "Allow new users to sign up" off).
+1. **Supabase**: crear proyecto → SQL Editor → ejecutar en orden los archivos de `supabase/migrations/`. En Authentication → Users, crear el usuario de Laura (correo + contraseña) y desactivar registros públicos (Authentication → Sign In / Providers → "Allow new users to sign up" off).
 2. **Resend**: verificar el dominio y crear una API key.
 3. **Wompi**: copiar llaves (pública, privada, integridad, eventos). En Desarrolladores → URL de eventos: `https://TU-DOMINIO/api/webhooks/wompi`.
 4. **Stripe**: llave secreta y webhook a `https://TU-DOMINIO/api/webhooks/stripe` con los eventos `checkout.session.completed` y `checkout.session.async_payment_succeeded`.
@@ -39,8 +39,9 @@ Sin `RESEND_API_KEY`, en desarrollo los correos se imprimen en consola en lugar 
 
 ## Pendientes antes de publicar
 
-- **Textos legales**: `src/content/legal/*.tsx` contienen un texto base. Reemplazar por las versiones finales ya redactadas (Términos, Política de Datos, Consentimiento + addendum). Si cambia el consentimiento, subir `CONSENT_VERSION` en `src/lib/submissions.ts`.
-- **Precios en COP** (`priceCop` en `src/lib/packs.ts`): hoy 36.000 / 40.000; ajustar.
+- **Datos del prestador** en `src/lib/brand.ts`: cédula/NIT, dirección y ciudad (exigidos por el art. 50 de la Ley 1480 y por la política de datos).
+- **Revisión legal**: los textos de `src/content/legal/*.tsx` están redactados según la Ley 1581/2012, el Decreto 1377/2013, la Ley 1090/2006, la Ley 1480/2011 y la Ley 527/1999. Conviene que los revise un abogado colombiano antes de publicar. Si cambian, subir `CONSENT_VERSION` en `src/lib/submissions.ts`.
+- Ejecutar también `supabase/migrations/0002_evidencia_consentimiento.sql`.
 - Fase 2: pack Vocacional, WhatsApp automático. Fase 3: Autismo (permiso de Cambridge para el AQ) y Selección de personal.
 
 ## Estructura

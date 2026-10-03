@@ -65,7 +65,14 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
           <dt>Estado</dt><dd>{sub.estado}</dd>
           <dt>Creado</dt><dd>{fmt(sub.fecha_creacion)}</dd>
           <dt>Pagado</dt><dd>{fmt(sub.pagado_at)}</dd>
+          <dt>Empezó a responder</dt><dd>{fmt(sub.iniciado_at)}</dd>
           <dt>Terminado</dt><dd>{fmt(sub.completado_at)}</dd>
+          <dt>Aceptación legal</dt>
+          <dd>
+            {sub.aceptacion
+              ? `Versión ${sub.aceptacion.version} · ${fmt(sub.aceptacion.fecha)} · IP ${sub.aceptacion.ip ?? "—"} · ${sub.aceptacion.documentos.length} documentos`
+              : "—"}
+          </dd>
           <dt>Pagos</dt>
           <dd>{(payments ?? []).map((p, i) => <div key={i}>{p.proveedor} · {p.monto} {p.moneda} · {p.estado} · {fmt(p.fecha)}</div>)}</dd>
           {report?.fecha_envio && (<><dt>Informe enviado</dt><dd>{fmt(report.fecha_envio)} por {report.aprobado_por}</dd></>)}
