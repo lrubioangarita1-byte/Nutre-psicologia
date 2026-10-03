@@ -100,3 +100,23 @@ test("cada pack disponible calcula puntajes, lectura preliminar y borrador", () 
     assert.ok(html.includes("Tarjeta Profesional 196983"));
   }
 });
+
+test("los textos del informe le hablan al cliente, sin jerga clínica, en todos los niveles", () => {
+  const jargon = /remisi[oó]n|entrevista cl[ií]nica|\bTCA\b|DIVA|intervenci[oó]n|psicoeducaci[oó]n|impacto funcional|retrospectiv|capitalizar|explorar en sesi[oó]n/i;
+  for (const pack of Object.values(PACKS).filter((p) => p.status === "disponible")) {
+    for (const optIdx of [0, 1, 2, 3, 4]) {
+      const responses: Record<string, unknown> = {};
+      for (const inst of pack.instruments) {
+        responses[inst.id] = inst.kind === "game"
+          ? { hits: optIdx, misses: 8 - optIdx, falseAlarms: 1, avgRt: 400 }
+          : inst.items.map(() => Math.min(optIdx, inst.scale.length - 1));
+      }
+      const scores = computeScores(packInstrumentIds(pack), responses);
+      const d = buildReportDraft({ packId: pack.id, clientName: "Ana", referredBy: null, scores });
+      const text = [d.summary, d.recommendations, ...d.instruments.flatMap((i) => i.lines.map((l) => `${l.band} ${l.tip}`))].join(" ");
+      assert.ok(!jargon.test(text), `${pack.id} (opción ${optIdx}) contiene jerga: ${text.match(jargon)?.[0]}`);
+      assert.ok(d.summary.length > 40, `${pack.id}: interpretación vacía`);
+      assert.ok(d.recommendations.startsWith("- "), `${pack.id}: sin recomendaciones`);
+    }
+  }
+});

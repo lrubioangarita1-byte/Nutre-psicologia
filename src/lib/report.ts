@@ -1,5 +1,5 @@
 /**
- * Borrador automático del informe (misma lógica del generador interno de informes)
+ * Borrador automático del informe (misma lógica de puntajes del generador interno, con textos dirigidos al cliente)
  * y plantilla HTML del correo que recibe el cliente.
  */
 import { IPIP_DOMAINS, MAX_SCORE, TMMS_DIMS, bandIpip, bandTmms, ipipDetail, type Scores, type TmmsDim } from "./instruments";
@@ -21,73 +21,90 @@ export type ReportDraft = {
   recommendations: string;
 };
 
-/* ---------- Bandas clínicas + consejos ---------- */
+/* ---------- Bandas + textos dirigidos al cliente ----------
+ * Todos los textos del informe le hablan directamente a la persona evaluada (tú),
+ * en tono cálido, sin diagnosticar y sin jerga clínica. Laura puede editarlos en el panel.
+ */
 export function bandGAD(s: number) { return s <= 4 ? "Mínima" : s <= 9 ? "Leve" : s <= 14 ? "Moderada" : "Severa"; }
 export function tipGAD(s: number) {
   return ({
-    Mínima: "Mantener buenas rutinas de autocuidado (sueño, ejercicio, pausas) como prevención.",
-    Leve: "Técnicas de respiración y manejo del tiempo pueden ayudar a que no escale.",
-    Moderada: "Vale la pena iniciar un proceso terapéutico breve enfocado en manejo de ansiedad.",
-    Severa: "Se recomienda evaluación profesional prioritaria; considerar también valoración psiquiátrica si hay impacto funcional importante.",
+    Mínima: "Tu nivel de ansiedad está en un rango bajo. Mantener tus rutinas de autocuidado —dormir bien, moverte y hacer pausas— te ayudará a conservarlo así.",
+    Leve: "Hay algo de ansiedad presente, pero en un nivel manejable. Herramientas sencillas, como la respiración pausada y organizar mejor tus tiempos, pueden evitar que aumente.",
+    Moderada: "La ansiedad está ocupando un espacio importante en tu día a día. Un proceso breve con un/a psicólogo/a puede darte herramientas concretas para manejarla: no tienes que resolverlo sin apoyo.",
+    Severa: "La ansiedad está afectando de forma notoria tu bienestar. Te recomiendo buscar acompañamiento profesional pronto; si además te está costando dormir, trabajar o cumplir con tu día, una valoración médica también puede ayudarte.",
   } as Record<string, string>)[bandGAD(s)];
 }
 export function bandPSS(s: number) { return s <= 13 ? "Baja" : s <= 26 ? "Moderada" : "Alta"; }
 export function tipPSS(s: number) {
   return ({
-    Baja: "Buen momento para consolidar hábitos de manejo del estrés como prevención.",
-    Moderada: "Identificar los disparadores principales de estrés y trabajar estrategias puntuales de afrontamiento.",
-    Alta: "Priorizar reducción de carga donde sea posible y considerar apoyo profesional si persiste.",
+    Baja: "En general sientes que puedes con las exigencias de tu vida. Es un buen momento para consolidar los hábitos que te están funcionando.",
+    Moderada: "Hay momentos en que las exigencias se te acumulan. Identificar qué situaciones disparan más tu estrés te permitirá anticiparte y responder mejor.",
+    Alta: "Ahora mismo sientes que las exigencias te superan. Vale la pena revisar qué cargas puedes soltar, delegar o posponer, y buscar apoyo profesional si esta sensación se mantiene.",
   } as Record<string, string>)[bandPSS(s)];
 }
 export function tipTMMS(dim: TmmsDim, s: number) {
   const m: Record<TmmsDim, Record<string, string>> = {
-    atencion: { Baja: "Practicar ejercicios de registro emocional diario (ej. diario de emociones).", Media: "Buen punto de partida; reforzar sin caer en rumiación.", Alta: "Trabajar en no quedarse 'enganchado/a' analizando de más lo que siente." },
-    claridad: { Baja: "Trabajar vocabulario emocional y ejercicios de identificación de emociones.", Media: "Reforzar con psicoeducación emocional básica.", Alta: "Buen recurso a capitalizar en el proceso terapéutico." },
-    reparacion: { Baja: "Foco principal de intervención: enseñar estrategias de regulación emocional (respiración, reestructuración cognitiva, etc.).", Media: "Ampliar el repertorio de estrategias de regulación ya existentes.", Alta: "Recurso protector importante; reforzar y mantener." },
+    atencion: {
+      Baja: "Sueles darte cuenta de lo que sientes cuando la emoción ya es intensa. Dedicar unos minutos al día a preguntarte «¿cómo me siento?» te ayudará a notarlo antes.",
+      Media: "Prestas atención a tus emociones en una medida saludable: las notas sin quedarte atrapado/a en ellas.",
+      Alta: "Le prestas mucha atención a lo que sientes. Es valioso, pero cuida que no se convierta en darle vueltas constantemente: a veces basta con notar la emoción y dejarla pasar.",
+    },
+    claridad: {
+      Baja: "A veces te cuesta ponerle nombre a lo que sientes. Ampliar tu vocabulario emocional (¿es tristeza, cansancio, frustración?) te ayudará a saber qué necesitas en cada momento.",
+      Media: "En general identificas lo que sientes, aunque algunas emociones te resulten más confusas. Seguir practicando ponerles nombre te dará aún más claridad.",
+      Alta: "Tienes claridad sobre lo que sientes, y esa es una gran fortaleza para tomar buenas decisiones sobre cómo cuidarte.",
+    },
+    reparacion: {
+      Baja: "Cuando aparece una emoción difícil, hoy cuentas con pocas herramientas para recuperarte. Es la habilidad que más te conviene fortalecer, y se puede aprender: los ejercicios de este informe son un buen comienzo.",
+      Media: "Tienes algunas estrategias para recuperarte de las emociones difíciles. Ampliar ese repertorio te dará más opciones cuando una no funcione.",
+      Alta: "Sabes recuperarte cuando las cosas se complican. Es un recurso protector muy valioso: sigue cultivándolo.",
+    },
   };
   return m[dim][bandTmms(s)];
 }
-export function bandEAT(s: number) { return s >= 20 ? "Riesgo — amerita evaluación adicional" : s >= 11 ? "Zona de vigilancia" : "Sin señales de riesgo elevado"; }
+export function bandEAT(s: number) { return s >= 20 ? "Señales de riesgo — conviene una evaluación especializada" : s >= 11 ? "Zona de atención" : "Sin señales de riesgo"; }
 export function tipEAT(s: number) {
-  if (s >= 20) return "Priorizar remisión a evaluación especializada en TCA. Explorar con cuidado conductas compensatorias (purgas, laxantes, ejercicio compulsivo) en la entrevista clínica.";
-  if (s >= 11) return "Sin cumplir el umbral de riesgo, hay preocupaciones relevantes por la comida/cuerpo que vale la pena explorar en sesión antes de que escalen.";
-  return "Reforzar hábitos saludables de relación con la comida y el cuerpo como prevención general.";
+  if (s >= 20) return "Tus respuestas muestran que la comida y tu cuerpo ocupan un espacio importante, y probablemente incómodo, en tu día a día. Te recomiendo consultar pronto con un/a profesional especializado/a en conducta alimentaria: entre más temprano se aborda, más sencillo suele ser el proceso.";
+  if (s >= 11) return "Aparecen algunas preocupaciones por la comida o por tu cuerpo, sin llegar a un nivel de riesgo. Vale la pena prestarles atención y conversarlas con un/a profesional antes de que crezcan.";
+  return "No aparecen señales de riesgo en tu relación con la comida. Seguir cultivando una relación amable con la comida y con tu cuerpo es la mejor prevención.";
 }
-export function bandSCOFF(s: number) { return s >= 2 ? "Tamizaje positivo" : "Tamizaje negativo"; }
+export function bandSCOFF(s: number) { return s >= 2 ? "Señales de alerta presentes" : "Sin señales de alerta"; }
 export function tipSCOFF(s: number) {
-  return s >= 2 ? "Confirmar con entrevista clínica estructurada; no demorar la remisión si el EAT-26 también sale elevado." : "Sin señales adicionales por este instrumento corto.";
+  return s >= 2
+    ? "Marcaste dos o más señales de alerta. Por sí solas no son un diagnóstico, pero sí son motivo suficiente para buscar una valoración profesional pronto."
+    : "No marcaste señales de alerta en este cuestionario corto.";
 }
-export function bandASRS(s: number) { return s >= 4 ? "Tamizaje positivo" : s >= 2 ? "Zona límite" : "Tamizaje negativo"; }
+export function bandASRS(s: number) { return s >= 4 ? "Síntomas actuales relevantes" : s >= 2 ? "Algunos síntomas presentes" : "Sin síntomas relevantes"; }
 export function tipASRS(s: number) {
-  if (s >= 4) return "Compatible con síntomas actuales relevantes; considerar evaluación estructurada (ej. DIVA-5) y explorar impacto funcional (trabajo, estudio, relaciones).";
-  if (s >= 2) return "No alcanza el umbral, pero hay síntomas presentes — vale la pena preguntar directamente por el impacto funcional antes de descartar.";
-  return "Sin síntomas actuales significativos por este tamizaje.";
+  if (s >= 4) return "Tus respuestas muestran dificultades actuales de atención, organización o inquietud que coinciden con lo que suele verse en el TDAH adulto. Esto no es un diagnóstico, pero sí justifica una evaluación completa que revise también cómo te afecta en el trabajo, el estudio y tus relaciones.";
+  if (s >= 2) return "Aparecen algunas dificultades de atención u organización, sin alcanzar el umbral de este tamizaje. Si sientes que te están afectando, vale la pena conversarlo con un/a profesional.";
+  return "No aparecen dificultades de atención relevantes en este tamizaje.";
 }
-export function bandWURS(s: number) { return s >= 46 ? "Elevado" : s >= 30 ? "Zona intermedia" : "No elevado"; }
+export function bandWURS(s: number) { return s >= 46 ? "Rasgos marcados en la infancia" : s >= 30 ? "Algunos indicios en la infancia" : "Sin indicios relevantes"; }
 export function tipWURS(s: number) {
-  if (s >= 46) return "Compatible con síntomas significativos desde la infancia; suma evidencia relevante para una evaluación diagnóstica completa.";
-  if (s >= 30) return "Hay indicios retrospectivos que no llegan al umbral — explorar con más detalle la historia escolar y familiar en la entrevista.";
-  return "Sin síntomas retrospectivos significativos.";
+  if (s >= 46) return "Tus recuerdos de la infancia muestran varios rasgos que suelen acompañar al TDAH. Este dato es importante para una evaluación completa, porque el TDAH en adultos casi siempre tiene raíces en la niñez.";
+  if (s >= 30) return "Recuerdas algunos rasgos de inquietud o distracción en tu infancia, sin llegar al umbral. En una evaluación más completa vale la pena repasar con calma tu historia escolar y familiar.";
+  return "No aparecen rasgos relevantes de TDAH en tu infancia según este cuestionario.";
 }
 export function bandRosenberg(s: number) { return s <= 19 ? "Baja" : s <= 29 ? "Media" : "Alta"; }
 export function tipRosenberg(s: number) {
   return ({
-    Baja: "Trabajar autoconcepto y autocompasión; explorar el origen de la autocrítica (familiar, social, experiencias tempranas).",
-    Media: "Reforzar recursos existentes; identificar en qué contextos específicos baja más la autoestima.",
-    Alta: "Buen recurso protector — reforzar y mantener, cuidando que no se convierta en rigidez ante la crítica.",
+    Baja: "Es probable que seas muy exigente contigo mismo/a y te cueste reconocer tus cualidades. La autoestima se puede fortalecer: los ejercicios de este informe y, si lo necesitas, un proceso terapéutico pueden ayudarte a entender de dónde viene esa voz crítica.",
+    Media: "Tienes una valoración de ti mismo/a bastante estable, con momentos de duda como le pasa a la mayoría. Observa en qué situaciones baja más tu confianza: ahí está tu mejor oportunidad de crecimiento.",
+    Alta: "Tienes una base sólida de valoración personal, un recurso que te protege frente a las críticas y los tropiezos. Cuídala, y recuerda que también está bien recibir retroalimentación sin sentirla como un ataque.",
   } as Record<string, string>)[bandRosenberg(s)];
 }
 
 /* ---------- Banco de ejercicios prácticos ---------- */
 export const EXERCISES: Record<string, Exercise> = {
-  respiracion478: { title: "Respiración 4-7-8", text: "Inhala por la nariz contando hasta 4, sostén el aire contando hasta 7, y exhala lentamente por la boca contando hasta 8. Repite 4 veces. Activa el sistema nervioso parasimpático y ayuda a bajar la activación física de la ansiedad en pocos minutos." },
-  grounding54321: { title: "Técnica 5-4-3-2-1 (anclaje sensorial)", text: "Nombra mentalmente 5 cosas que puedes ver, 4 que puedes tocar, 3 que puedes oír, 2 que puedes oler y 1 que puedes saborear. Ayuda a salir de la rumiación y volver al presente cuando la ansiedad se dispara con fuerza." },
+  respiracion478: { title: "Respiración 4-7-8", text: "Inhala por la nariz contando hasta 4, sostén el aire contando hasta 7, y exhala lentamente por la boca contando hasta 8. Repite 4 veces. Le avisa a tu cuerpo que puede calmarse y baja las sensaciones físicas de la ansiedad en pocos minutos." },
+  grounding54321: { title: "Técnica 5-4-3-2-1 (anclaje sensorial)", text: "Nombra mentalmente 5 cosas que puedes ver, 4 que puedes tocar, 3 que puedes oír, 2 que puedes oler y 1 que puedes saborear. Te ayuda a salir de los pensamientos que dan vueltas y a volver al presente cuando la ansiedad se dispara con fuerza." },
   pausasActivas: { title: "Pausas activas programadas", text: "Programa 3 alarmas al día (ej. 10am, 1pm, 4pm) para detenerte 2 minutos: estirarte, respirar o mirar por la ventana. El estrés se acumula más por falta de pausas que por la carga en sí." },
-  stop: { title: "Técnica STOP", text: "Cuando notes malestar: S-detente, T-toma un respiro, O-observa qué sientes y piensas, P-procede con una acción consciente. Interrumpe el piloto automático que mantiene el estrés." },
+  stop: { title: "Técnica STOP", text: "Cuando notes malestar: S-detente, T-toma un respiro, O-observa qué sientes y piensas, P-procede con una acción consciente. Te ayuda a salir del piloto automático que mantiene el estrés." },
   diarioEmociones: { title: "Diario de emociones de 3 líneas", text: "Cada noche escribe 3 líneas: qué sentiste hoy, qué lo disparó, y qué hiciste con eso. No busca resolver nada — entrena la claridad emocional con el tiempo." },
-  registroLogros: { title: "Registro diario de logros", text: "Anota cada noche 3 cosas que hiciste bien hoy, por pequeñas que sean. Contrarresta el sesgo de autocrítica que mantiene baja la autoestima." },
+  registroLogros: { title: "Registro diario de logros", text: "Anota cada noche 3 cosas que hiciste bien hoy, por pequeñas que sean. Entrena tu mirada para notar lo que haces bien, no solo lo que te falta." },
   autocompasion: { title: "Carta de autocompasión", text: "Escríbete una carta breve como si fueras tu mejor amigo/a hablándote sobre algo que te cuesta. Suaviza la autocrítica y mejora la relación contigo mismo/a." },
-  pensamientosCuerpo: { title: "Registro de pensamientos sobre el cuerpo", text: "Cuando aparezca un pensamiento crítico sobre tu cuerpo, anótalo junto con la situación que lo disparó. No busca cambiarlo de inmediato, sino notar el patrón antes de trabajarlo en terapia." },
+  pensamientosCuerpo: { title: "Registro de pensamientos sobre el cuerpo", text: "Cuando aparezca un pensamiento crítico sobre tu cuerpo, anótalo junto con la situación que lo disparó. No busca cambiarlo de inmediato, sino ayudarte a notar cuándo y por qué aparece." },
   redApoyo: { title: "Un mensaje a tu red de apoyo", text: "Elige a una persona de confianza y cuéntale, aunque sea brevemente, cómo te has sentido esta semana. Romper el aislamiento es uno de los factores protectores más importantes." },
   pomodoroTDAH: { title: "Pomodoro adaptado (25/5)", text: "Trabaja 25 minutos en una sola tarea con el celular fuera de la vista, luego descansa 5. Reduce la fricción de iniciar tareas que cuesta arrancar." },
   recordatoriosExternos: { title: "Sistema de recordatorios visibles", text: "En vez de confiar en la memoria, usa notas visibles o alarmas en los lugares donde realmente actúas. Externalizar la organización compensa la dificultad para sostenerla mentalmente." },
@@ -150,6 +167,40 @@ function tmmsBlock(t: NonNullable<Scores["tmms24"]>): ReportInstrument {
   };
 }
 
+const TRAIT_NAMES = ["la extraversión", "la amabilidad", "la responsabilidad", "la estabilidad emocional", "la apertura a nuevas ideas"];
+
+function reparacionText(re: number) {
+  const b = bandTmms(re);
+  if (b === "Alta") return "Tu capacidad para recuperarte de las emociones difíciles es una fortaleza que amortigua mucho el impacto de lo demás.";
+  if (b === "Media") return "Cuentas con algunas herramientas para recuperarte cuando aparece el malestar, y ampliarlas es tu mejor oportunidad de mejora.";
+  return "Hoy te cuesta recuperarte cuando aparece el malestar, y eso hace que la ansiedad y el estrés se queden más tiempo; por eso los ejercicios de este informe se enfocan en esa habilidad.";
+}
+
+const bullets = (xs: string[]) => xs.map((x) => `- ${x}`).join("\n");
+
+function ipipBlock(d: number[]): ReportInstrument {
+  return {
+    title: "IPIP-50 — Los cinco grandes rasgos de personalidad",
+    lines: IPIP_DOMAINS.map((label, i) => ({ label, score: `${d[i]} / 50`, pct: pct(d[i], 50), risky: false, band: bandIpip(d[i]), tip: ipipDetail(i, d[i]) })),
+  };
+}
+
+function cptBlock(cpt: NonNullable<Scores["cpt"]>): ReportInstrument {
+  return {
+    title: "Prueba breve de atención",
+    lines: [{
+      score: `${cpt.accuracy}% de aciertos`,
+      pct: cpt.accuracy,
+      risky: cpt.accuracy < 70,
+      band: `Tiempo de reacción promedio: ${cpt.avgRt ?? "—"} ms · Toques fuera de lugar: ${cpt.falseAlarms}`,
+      tip: cpt.accuracy < 70
+        ? "Tu desempeño en este ejercicio corto fue algo variable. Es solo un dato informal que complementa los cuestionarios y no se interpreta por sí solo."
+        : "Tu desempeño en este ejercicio corto fue bueno. Es un dato informal que complementa los cuestionarios.",
+    }],
+    note: "Ejercicio ilustrativo, no una prueba neuropsicológica validada.",
+  };
+}
+
 export function buildReportDraft(input: {
   packId: PackId;
   clientName: string;
@@ -159,65 +210,105 @@ export function buildReportDraft(input: {
   const { packId, scores: s } = input;
   const pack = PACKS[packId];
   const instruments: ReportInstrument[] = [];
-  let tips: string[] = [];
+  let summary = "";
+  let recs: string[] = [];
 
   if (packId === "ansiedad") {
     const gad = s.gad7!, pss = s.pss10!, t = s.tmms24!;
     instruments.push(single("GAD-7 — Ansiedad", gad, 21, bandGAD(gad), RISKY.gad7(gad), tipGAD(gad)));
     instruments.push(single("PSS-10 — Estrés percibido", pss, 40, bandPSS(pss), RISKY.pss10(pss), tipPSS(pss)));
     instruments.push(tmmsBlock(t));
-    tips = [tipGAD(gad), tipPSS(pss), tipTMMS("reparacion", t.reparacion)];
+    const needsSupport = gad >= 10 || pss >= 27;
+    summary =
+      `Tus resultados muestran una ansiedad ${bandGAD(gad).toLowerCase()} y una percepción de estrés ${bandPSS(pss).toLowerCase()}. ${reparacionText(t.reparacion)}\n\n` +
+      (needsSupport
+        ? "Con lo que veo en tus respuestas, te recomiendo no cargar esto sin apoyo: un proceso breve con un/a psicólogo/a puede marcar una diferencia real en cómo te sientes."
+        : "Con pequeños ajustes en tu rutina puedes mantener este equilibrio y estar más preparado/a para los momentos de mayor presión.");
+    if (needsSupport) recs.push("Buscar acompañamiento con un/a psicólogo/a para trabajar el manejo de la ansiedad y el estrés.");
+    if (gad >= 15) recs.push("Considerar también una valoración médica si la ansiedad está afectando tu sueño, tu apetito o tu capacidad de cumplir con tu día.");
+    if (pss >= 14) recs.push("Identificar las dos o tres situaciones que más disparan tu estrés y pensar qué puedes soltar, delegar o anticipar.");
+    recs.push("Practicar los ejercicios de este informe durante al menos dos semanas y observar qué cambia.");
+    recs.push("Cuidar lo básico: horarios de sueño regulares, movimiento diario y espacios sin pantallas.");
   } else if (packId === "alimentacion") {
     const eat = s.eat26!, scoff = s.scoff!;
     instruments.push(single("EAT-26 — Actitudes alimentarias", eat, MAX_SCORE.eat26, bandEAT(eat), RISKY.eat26(eat), tipEAT(eat)));
-    instruments.push(single("SCOFF — Tamizaje TCA", scoff, 5, bandSCOFF(scoff), RISKY.scoff(scoff), tipSCOFF(scoff)));
-    tips = [eat >= 20 || scoff >= 2 ? "Se recomienda evaluación clínica especializada en TCA a la brevedad." : "No se identifican señales de alarma relevantes por ahora."];
+    instruments.push(single("SCOFF — Señales de alerta", scoff, 5, bandSCOFF(scoff), RISKY.scoff(scoff), tipSCOFF(scoff)));
+    if (eat >= 20 || scoff >= 2) {
+      summary = "Tus respuestas muestran señales que conviene atender con un/a profesional especializado/a en conducta alimentaria. Esto no es un diagnóstico y no tienes por qué alarmarte: es una invitación a cuidarte a tiempo, porque entre más temprano se aborda, más sencillo suele ser el camino.";
+      recs = [
+        "Pedir una cita con un/a profesional especializado/a en conducta alimentaria (psicología y, si es posible, también nutrición).",
+        "Si en algún momento vomitas, usas laxantes o haces ejercicio para «compensar» lo que comes, cuéntaselo a ese profesional: es información clave para ayudarte.",
+        "Hablar con una persona de confianza sobre cómo te has sentido.",
+      ];
+    } else if (eat >= 11) {
+      summary = "No aparecen señales de riesgo, aunque sí algunas preocupaciones por la comida o por tu cuerpo que vale la pena observar con cariño, antes de que crezcan.";
+      recs = [
+        "Observar en qué momentos aparecen esas preocupaciones (cansancio, estrés, comentarios de otros) para entender qué las dispara.",
+        "Conversarlo con un/a psicólogo/a si notas que ocupan cada vez más espacio en tu día.",
+      ];
+    } else {
+      summary = "No aparecen señales de riesgo en tu relación con la comida y con tu cuerpo. Es una buena base para seguir cuidándote.";
+      recs = ["Seguir comiendo con flexibilidad y sin culpa, y tratar a tu cuerpo con la misma amabilidad que a alguien que quieres."];
+    }
   } else if (packId === "quiensoy") {
     const d = s.ipip50!, t = s.tmms24!, ros = s.rosenberg!;
-    instruments.push({
-      title: "IPIP-50 — Los cinco grandes",
-      lines: IPIP_DOMAINS.map((label, i) => ({ label, score: `${d[i]} / 50`, pct: pct(d[i], 50), risky: false, band: bandIpip(d[i]), tip: ipipDetail(i, d[i]) })),
-    });
+    instruments.push(ipipBlock(d));
     instruments.push(tmmsBlock(t));
     instruments.push(single("Rosenberg — Autoestima", ros, 40, bandRosenberg(ros), RISKY.rosenberg(ros), tipRosenberg(ros)));
-    tips = ["Perfil de personalidad orientativo para autoconocimiento.", tipTMMS("reparacion", t.reparacion)];
+    const top = TRAIT_NAMES[d.indexOf(Math.max(...d))];
+    summary =
+      `Tu rasgo de personalidad más marcado es ${top}, y tu autoestima está en un nivel ${bandRosenberg(ros).toLowerCase()}. ` +
+      `En cuanto a tus emociones, ${tipTMMS("reparacion", t.reparacion).charAt(0).toLowerCase()}${tipTMMS("reparacion", t.reparacion).slice(1)}\n\n` +
+      "Ningún rasgo de personalidad es bueno o malo en sí mismo: lo valioso es conocerte para elegir entornos, relaciones y metas que encajen contigo.";
+    recs.push("Usar tu perfil para reconocer en qué tipo de entornos y tareas te sientes más tú.");
+    if (ros <= 19) recs.push("Explorar en un proceso terapéutico de dónde viene tu autocrítica: la autoestima se puede fortalecer.");
+    if (t.reparacion <= 16) recs.push("Aprender estrategias para recuperarte de las emociones difíciles, empezando por los ejercicios de este informe.");
+    recs.push("Practicar los ejercicios de este informe durante al menos dos semanas.");
   } else if (packId === "tdah") {
     const asrs = s.asrs!, wurs = s.wurs25!, cpt = s.cpt;
-    instruments.push(single("ASRS v1.1", asrs, 6, bandASRS(asrs), RISKY.asrs(asrs), tipASRS(asrs)));
-    instruments.push(single("WURS-25", wurs, 100, bandWURS(wurs), RISKY.wurs25(wurs), tipWURS(wurs)));
-    if (cpt) {
-      instruments.push({
-        title: "Prueba breve de atención",
-        lines: [{
-          score: `${cpt.accuracy}% de aciertos`,
-          pct: cpt.accuracy,
-          risky: cpt.accuracy < 70,
-          band: `Tiempo de reacción promedio: ${cpt.avgRt ?? "—"} ms · Toques fuera de lugar: ${cpt.falseAlarms}`,
-          tip: cpt.accuracy < 70
-            ? "El desempeño en este ejercicio corto fue más variable de lo esperado — puede ser un dato adicional a considerar junto con los demás, sin sobreinterpretarlo por sí solo."
-            : "El desempeño en este ejercicio corto fue razonable — un dato adicional informal que complementa los demás resultados.",
-        }],
-        note: "Ejercicio ilustrativo, no una prueba neuropsicológica validada.",
-      });
+    instruments.push(single("ASRS v1.1 — Síntomas actuales", asrs, 6, bandASRS(asrs), RISKY.asrs(asrs), tipASRS(asrs)));
+    instruments.push(single("WURS-25 — Síntomas en la infancia", wurs, 100, bandWURS(wurs), RISKY.wurs25(wurs), tipWURS(wurs)));
+    if (cpt) instruments.push(cptBlock(cpt));
+    const now = asrs >= 4, past = wurs >= 46;
+    summary =
+      now && past
+        ? "Tanto tus dificultades actuales como los recuerdos de tu infancia coinciden con un patrón compatible con TDAH. Esto no es un diagnóstico, pero sí es justo la combinación que una evaluación completa necesita confirmar o descartar, así que te recomiendo dar ese siguiente paso."
+        : now || past
+          ? `Aparecen señales ${now ? "en tu presente" : "en tu infancia"}, pero no en ambos momentos de tu vida. Esto no descarta nada: sugiere profundizar con calma antes de sacar conclusiones.`
+          : "No aparece un patrón claro de TDAH ni en tu presente ni en tu infancia según este tamizaje. Si aun así sientes que la atención o la organización te están costando, vale la pena conversarlo con un/a profesional, porque pueden influir otros factores como el estrés, el sueño o el estado de ánimo.";
+    if (now || past) {
+      recs.push("Agendar una evaluación diagnóstica completa de TDAH en adultos con un/a profesional (psicología clínica, neuropsicología o psiquiatría).");
+      recs.push("Llevar a esa cita este informe y, si los tienes, boletines o recuerdos de tu etapa escolar.");
     }
-    tips = [asrs >= 4 || wurs >= 46 ? "El patrón combinado (actual + retrospectivo) sugiere valorar una evaluación diagnóstica completa de TDAH." : "No se identifica un patrón claro de TDAH en este tamizaje."];
+    recs.push("Probar las estrategias de organización de este informe: suelen ayudar con o sin diagnóstico.");
   } else if (packId === "atencion") {
     const asrs = s.asrs!;
     instruments.push(single("ASRS v1.1 — Tamizaje de atención en adultos", asrs, 6, bandASRS(asrs), RISKY.asrs(asrs), tipASRS(asrs)));
-    tips = [asrs >= 4
-      ? "Los síntomas actuales justifican una evaluación más completa de TDAH en adultos, que incluya la historia desde la infancia y el impacto funcional."
-      : "No se alcanza el umbral de este tamizaje; si las dificultades de atención afectan el día a día, conviene explorarlas en consulta."];
+    summary = asrs >= 4
+      ? "Tus respuestas muestran dificultades actuales de atención y organización que justifican mirar más a fondo. Este cuestionario es un primer filtro: una evaluación completa también revisa tu historia desde la infancia y cómo te afecta en el día a día."
+      : "No se alcanza el umbral de este tamizaje. Si aun así sientes que la atención te está costando, vale la pena conversarlo con un/a profesional, porque pueden influir otros factores como el estrés, el sueño o el estado de ánimo.";
+    if (asrs >= 4) recs.push("Considerar una evaluación completa de TDAH en adultos (por ejemplo, el pack «TDAH en adultos» o una consulta especializada).");
+    recs.push("Probar las estrategias de organización de este informe durante dos semanas.");
   } else if (packId === "personalidad") {
     const d = s.ipip50!;
-    instruments.push({
-      title: "IPIP-50 — Los cinco grandes",
-      lines: IPIP_DOMAINS.map((label, i) => ({ label, score: `${d[i]} / 50`, pct: pct(d[i], 50), risky: false, band: bandIpip(d[i]), tip: ipipDetail(i, d[i]) })),
-    });
-    tips = ["Perfil de personalidad orientativo para autoconocimiento: ningún rasgo es positivo o negativo en sí mismo; su valor depende del contexto y de los objetivos personales."];
+    instruments.push(ipipBlock(d));
+    const top = TRAIT_NAMES[d.indexOf(Math.max(...d))];
+    const low = TRAIT_NAMES[d.indexOf(Math.min(...d))];
+    summary = `Tu rasgo más marcado es ${top} y el menos marcado es ${low}. Ningún rasgo es bueno o malo en sí mismo: cada combinación trae fortalezas distintas según el contexto, y conocerla te ayuda a elegir entornos, relaciones y metas que encajen contigo.`;
+    recs = [
+      "Reconocer en qué situaciones tu forma de ser es una fortaleza, y en cuáles te pide un esfuerzo extra.",
+      "Compartir este perfil con alguien de confianza y preguntarle si se reconoce en él: suele abrir conversaciones muy valiosas.",
+    ];
   } else if (packId === "emocional") {
     const t = s.tmms24!;
     instruments.push(tmmsBlock(t));
-    tips = TMMS_DIMS.map(([k]) => tipTMMS(k, t[k]));
+    summary =
+      `Tu atención emocional es ${bandTmms(t.atencion).toLowerCase()}, tu claridad emocional es ${bandTmms(t.claridad).toLowerCase()} y tu capacidad para recuperarte de las emociones difíciles es ${bandTmms(t.reparacion).toLowerCase()}. ` +
+      "Estas tres habilidades se entrenan con la práctica, como cualquier otra.";
+    if (t.claridad <= 16) recs.push("Practicar ponerle nombre a lo que sientes cada día (el diario de emociones es una buena forma de empezar).");
+    if (t.reparacion <= 16) recs.push("Aprender estrategias para recuperarte cuando aparece una emoción difícil; si te cuesta mucho, un proceso con un/a psicólogo/a puede ayudarte.");
+    if (t.atencion >= 30) recs.push("Cuidar que la atención a tus emociones no se convierta en darles vueltas constantemente.");
+    recs.push("Practicar los ejercicios de este informe durante al menos dos semanas.");
   }
 
   return {
@@ -226,9 +317,9 @@ export function buildReportDraft(input: {
     packName: pack.name,
     referredBy: input.referredBy,
     instruments,
-    summary: tips.join(" "),
+    summary,
     exercises: pickExercises(packId, s),
-    recommendations: tips.map((t) => `- ${t}`).join("\n"),
+    recommendations: bullets(recs),
   };
 }
 
