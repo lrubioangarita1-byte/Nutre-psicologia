@@ -23,7 +23,9 @@ export const env = {
       .map((e) => e.trim())
       .filter(Boolean),
   resendKey: () => process.env.RESEND_API_KEY || "",
-  emailFrom: () => process.env.EMAIL_FROM || "LucernaPsi · Laura Rubio <informes@lucernapsi.com>",
+  // Sin dominio verificado en Resend se usa su remitente de prueba, que solo puede enviar
+  // al correo con el que se creó la cuenta de Resend. Con dominio: EMAIL_FROM=informes@lucernapsi.com
+  emailFrom: () => process.env.EMAIL_FROM || "LucernaPsi <onboarding@resend.dev>",
   emailReplyTo: () => process.env.EMAIL_REPLY_TO || "Lrubioangarita1@gmail.com",
   stripeSecret: () => process.env.STRIPE_SECRET_KEY || "",
   stripeWebhookSecret: () => process.env.STRIPE_WEBHOOK_SECRET || "",
