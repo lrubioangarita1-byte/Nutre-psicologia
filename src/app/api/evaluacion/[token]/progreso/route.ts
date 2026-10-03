@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimited } from "@/lib/rate-limit";
 import { db } from "@/lib/supabase/admin";
 import { getPack } from "@/lib/packs";
 import { getSubmissionByToken } from "@/lib/submissions";
@@ -6,6 +7,7 @@ import { sanitizeResponses } from "@/lib/validate";
 
 /** Guarda automáticamente el avance (respuestas parciales). */
 export async function POST(req: Request, ctx: { params: Promise<{ token: string }> }) {
+  if (rateLimited(req, "progreso", 300, 10 * 60_000)) return NextResponse.json({ error: "Demasiadas solicitudes" }, { status: 429 });
   const { token } = await ctx.params;
   const sub = await getSubmissionByToken(token);
   const pack = sub && getPack(sub.pack_id);

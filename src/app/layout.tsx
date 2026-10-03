@@ -1,13 +1,21 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Laura Rubio · Psicología del Bienestar",
     template: "%s · Laura Rubio Psicología",
   },
   description:
     "Evaluaciones psicológicas online con informe personalizado en 12–24 horas, revisado por Laura Rubio Angarita, Psicóloga (TP 196983).",
+  openGraph: {
+    type: "website",
+    locale: "es_CO",
+    siteName: "Laura Rubio · Psicología del Bienestar",
+  },
+  alternates: { canonical: "/" },
 };
 
 export const viewport: Viewport = {
@@ -29,7 +37,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <a href="#contenido" className="skip-link">Saltar al contenido</a>
+        <div id="contenido">{children}</div>
+      </body>
     </html>
   );
 }

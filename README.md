@@ -17,6 +17,8 @@ Plataforma de evaluación psicológica online: el cliente paga, responde un pack
 
 ## Puesta en marcha
 
+> Guía paso a paso, sin tecnicismos y con costos: **[PUBLICAR.md](PUBLICAR.md)**.
+
 1. **Supabase**: crear proyecto → SQL Editor → ejecutar en orden los archivos de `supabase/migrations/`. En Authentication → Users, crear el usuario de Laura (correo + contraseña) y desactivar registros públicos (Authentication → Sign In / Providers → "Allow new users to sign up" off).
 2. **Resend**: verificar el dominio y crear una API key.
 3. **Wompi**: copiar llaves (pública, privada, integridad, eventos). En Desarrolladores → URL de eventos: `https://TU-DOMINIO/api/webhooks/wompi`.

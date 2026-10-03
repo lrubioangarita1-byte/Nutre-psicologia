@@ -310,3 +310,12 @@ textarea.edit { min-height: 70px; resize: vertical; line-height: 1.5; }
   .nav-links { display: none; }
   .case-row { grid-template-columns: 1fr; }
 }
+
+/* ACCESIBILIDAD */
+.skip-link { position: absolute; left: -9999px; top: 8px; background: var(--olive); color: var(--bg-panel); padding: 8px 14px; border-radius: 8px; z-index: 100; }
+.skip-link:focus { left: 8px; }
+:focus-visible { outline: 3px solid var(--coral); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; }
+}

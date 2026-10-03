@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimited } from "@/lib/rate-limit";
 import { db } from "@/lib/supabase/admin";
 import { getPack, packInstrumentIds, type PackId } from "@/lib/packs";
 import { caseInfo, getSubmissionByToken } from "@/lib/submissions";
@@ -13,6 +14,7 @@ import { notifyNewCase } from "@/lib/email";
  * genera el borrador del informe y avisa a Laura. Idempotente.
  */
 export async function POST(req: Request, ctx: { params: Promise<{ token: string }> }) {
+  if (rateLimited(req, "finalizar", 30, 10 * 60_000)) return NextResponse.json({ error: "Demasiadas solicitudes" }, { status: 429 });
   const { token } = await ctx.params;
   const sub = await getSubmissionByToken(token);
   const pack = sub && getPack(sub.pack_id);

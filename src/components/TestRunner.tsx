@@ -44,6 +44,7 @@ export function TestRunner({ token, packId, clientName, initialResponses, initia
   const [qIndex, setQIndex] = useState(0);
   const [responses, setResponses] = useState<Responses>(initialResponses);
   const [safety, setSafety] = useState<boolean | null>(initialSafety);
+  const [safetySaved, setSafetySaved] = useState(initialSafety !== null);
   const [result, setResult] = useState<{ scores: Scores; crisis: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -129,19 +130,28 @@ export function TestRunner({ token, packId, clientName, initialResponses, initia
   }
 
   async function answerSafety(yes: boolean) {
+    // La respuesta (y el mensaje de crisis si es "Sí") se mantiene en pantalla aunque falle la red;
+    // el guardado se reintenta varias veces porque de él depende la alerta urgente a la psicóloga.
     setSafety(yes);
+    setSafetySaved(false);
     setError("");
-    try {
-      const res = await fetch(`/api/evaluacion/${token}/seguridad`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ respuesta: yes }),
-      });
-      if (!res.ok) throw new Error();
-    } catch {
-      setError("No pudimos guardar tu respuesta. Revisa tu conexión e intenta de nuevo.");
-      setSafety(null);
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        const res = await fetch(`/api/evaluacion/${token}/seguridad`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ respuesta: yes }),
+        });
+        if (res.ok) {
+          setSafetySaved(true);
+          return;
+        }
+      } catch {
+        // reintentar
+      }
+      await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
     }
+    setError("No pudimos guardar tu respuesta por un problema de conexión. Vuelve a marcarla para intentarlo de nuevo.");
   }
 
   async function finish() {
@@ -190,7 +200,7 @@ export function TestRunner({ token, packId, clientName, initialResponses, initia
         {safety === true && <div style={{ marginTop: 20 }}><CrisisBox /></div>}
         <div className="app-nav">
           <button className="btn btn-ghost" onClick={goBackStep} disabled={busy}>Atrás</button>
-          <button className="btn btn-primary" onClick={finish} disabled={safety === null || busy}>
+          <button className="btn btn-primary" onClick={finish} disabled={safety === null || !safetySaved || busy}>
             {busy ? "Guardando…" : "Ver mis resultados"}
           </button>
         </div>

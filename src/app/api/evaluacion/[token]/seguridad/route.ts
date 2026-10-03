@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimited } from "@/lib/rate-limit";
 import { db } from "@/lib/supabase/admin";
 import { caseInfo, getSubmissionByToken } from "@/lib/submissions";
 import { recordRiskEvent } from "@/lib/risk";
@@ -9,6 +10,7 @@ import { SAFETY_QUESTION } from "@/lib/instruments";
  * contesta (no al final), para que la alerta urgente salga aunque cierre la pestaña.
  */
 export async function POST(req: Request, ctx: { params: Promise<{ token: string }> }) {
+  if (rateLimited(req, "seguridad", 30, 10 * 60_000)) return NextResponse.json({ error: "Demasiadas solicitudes" }, { status: 429 });
   const { token } = await ctx.params;
   const sub = await getSubmissionByToken(token);
   if (!sub) return NextResponse.json({ error: "No encontrado" }, { status: 404 });

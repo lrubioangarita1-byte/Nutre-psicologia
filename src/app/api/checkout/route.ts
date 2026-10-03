@@ -6,11 +6,15 @@ import { CONSENT_VERSION, newAccessToken } from "@/lib/submissions";
 import { wompiCheckoutUrl } from "@/lib/payments/wompi";
 import { stripeCheckoutUrl } from "@/lib/payments/stripe";
 import { evaluationUrl, unlockSubmission } from "@/lib/payments";
+import { rateLimited } from "@/lib/rate-limit";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const clean = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
 export async function POST(req: Request) {
+  if (rateLimited(req, "checkout", 8, 10 * 60_000)) {
+    return NextResponse.json({ error: "Demasiados intentos. Espera unos minutos e intenta de nuevo." }, { status: 429 });
+  }
   let body: Record<string, unknown>;
   try {
     body = await req.json();

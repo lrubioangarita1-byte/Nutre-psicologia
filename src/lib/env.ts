@@ -1,4 +1,5 @@
 /** Lectura centralizada de variables de entorno (solo servidor). */
+import { SITE_URL } from "./site";
 function required(name: string): string {
   const v = process.env[name];
   if (!v) throw new Error(`Falta la variable de entorno ${name}`);
@@ -6,7 +7,7 @@ function required(name: string): string {
 }
 
 export const env = {
-  siteUrl: () => (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, ""),
+  siteUrl: () => SITE_URL,
   supabaseUrl: () => required("NEXT_PUBLIC_SUPABASE_URL"),
   supabaseAnonKey: () => required("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
   supabaseServiceKey: () => required("SUPABASE_SERVICE_ROLE_KEY"),
@@ -40,4 +41,19 @@ export function enabledProviders() {
     stripe: Boolean(env.stripeSecret()),
     bypass: env.paymentsBypass(),
   };
+}
+
+/** Estado de configuración, para el panel de administración. */
+export function configStatus() {
+  const p = enabledProviders();
+  return [
+    { name: "Base de datos (Supabase)", ok: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY), needed: "Obligatorio" },
+    { name: "Correos (Resend)", ok: Boolean(env.resendKey()), needed: "Obligatorio: sin esto no salen informes ni alertas de crisis" },
+    { name: "Alertas de riesgo a", ok: env.alertEmails().length > 0, needed: env.alertEmails().join(", ") || "Definir ALERT_EMAILS" },
+    { name: "Pagos en pesos (Wompi)", ok: p.wompi, needed: "Al menos un medio de pago" },
+    { name: "Webhook de Wompi", ok: Boolean(env.wompiEventsSecret()), needed: "Recomendado (pagos PSE pendientes)" },
+    { name: "Pagos en dólares (Stripe)", ok: p.stripe, needed: "Opcional" },
+    { name: "Webhook de Stripe", ok: !p.stripe || Boolean(env.stripeWebhookSecret()), needed: "Recomendado si usas Stripe" },
+    { name: "Dominio propio", ok: Boolean(process.env.NEXT_PUBLIC_SITE_URL), needed: SITE_URL },
+  ];
 }

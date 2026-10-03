@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/supabase/admin";
 import { getPack } from "@/lib/packs";
 import type { Submission } from "@/lib/submissions";
+import { configStatus } from "@/lib/env";
 
 const TABS = {
   pendientes: { label: "Pendientes de revisión", estados: ["pendiente", "revisado"] },
@@ -57,8 +58,25 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
     .eq("nivel_riesgo", "crisis")
     .eq("estado", "en_progreso");
 
+  const status = configStatus();
+  const missingRequired = status.some((c) => !c.ok && c.needed.startsWith("Obligatorio"));
+  const testMode = (process.env.WOMPI_PUBLIC_KEY ?? "").startsWith("pub_test_") || (process.env.STRIPE_SECRET_KEY ?? "").startsWith("sk_test_");
+
   return (
     <>
+      <details className="card" open={missingRequired}>
+        <summary style={{ cursor: "pointer", fontWeight: 700 }}>
+          Estado para publicar: {status.filter((c) => c.ok).length} de {status.length} listos
+          {testMode && <span className="pill elevado" style={{ marginLeft: 10 }}>Pagos en modo prueba</span>}
+        </summary>
+        <ul style={{ listStyle: "none", padding: 0, margin: "12px 0 0", fontSize: 14 }}>
+          {status.map((c) => (
+            <li key={c.name} style={{ padding: "4px 0" }}>
+              {c.ok ? "✅" : "⬜"} <b>{c.name}</b> <span className="muted">— {c.needed}</span>
+            </li>
+          ))}
+        </ul>
+      </details>
       <h1 style={{ fontSize: 26 }}>Casos</h1>
       {openCrisis && openCrisis.length > 0 && (
         <div className="alert-box" style={{ marginTop: 16 }}>
