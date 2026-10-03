@@ -1,5 +1,6 @@
 "use client";
 
+import { BRAND } from "@/lib/brand";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CPT_LETTERS,
@@ -271,7 +272,7 @@ export function TestRunner({ token, packId, clientName, initialResponses, initia
   return (
     <div>
       <div className="app-bar">
-        <span className="brand-mini"><span className="mono">LR</span> Conócete</span>
+        <span className="brand-mini"><span className="mono">{BRAND.monogram}</span> {BRAND.product}</span>
         <span className="step-label">{label}</span>
       </div>
       <div className="app-body">

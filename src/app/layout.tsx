@@ -5,15 +5,15 @@ import { SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Conócete · Evaluación psicológica online por Laura Rubio",
-    template: "%s · Conócete",
+    default: "LucernaPsi · Evaluación psicológica online por Laura Rubio",
+    template: "%s · LucernaPsi",
   },
   description:
     "Evaluaciones psicológicas online con informe personalizado en 12–24 horas, revisado por Laura Rubio Angarita, Psicóloga (TP 196983).",
   openGraph: {
     type: "website",
     locale: "es_CO",
-    siteName: "Conócete",
+    siteName: "LucernaPsi",
   },
   alternates: { canonical: "/" },
 };

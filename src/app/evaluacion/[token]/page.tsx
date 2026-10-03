@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getSubmissionByToken } from "@/lib/submissions";
@@ -43,7 +44,7 @@ export default async function EvaluationPage({ params }: { params: Promise<{ tok
   return (
     <div>
       <div className="app-bar">
-        <span className="brand-mini"><span className="mono">LR</span> Conócete</span>
+        <span className="brand-mini"><span className="mono">{BRAND.monogram}</span> {BRAND.product}</span>
         <span className="step-label">{sub.estado === "enviado" ? "Informe enviado" : "En revisión"}</span>
       </div>
       <div className="app-body">

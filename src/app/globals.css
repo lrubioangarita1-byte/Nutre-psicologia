@@ -104,7 +104,7 @@ nav.top {
 }
 
 /* HERO */
-.hero { padding: 56px 0 72px; }
+.hero { padding-block: 56px 72px; }
 .hero .kicker { font-size: 14px; color: var(--coral-deep); margin-bottom: 14px; font-weight: 600; }
 .hero h1 { font-size: clamp(34px, 5.4vw, 58px); max-width: 14ch; }
 .hero h1 em { font-style: italic; font-weight: 500; color: var(--coral); }
@@ -116,7 +116,7 @@ nav.top {
 .stat span { font-size: 13px; color: var(--ink-soft); }
 
 /* SECTIONS */
-.section { padding: 64px 0; }
+.section { padding-block: 64px; }
 .section-head { max-width: 56ch; margin-bottom: 36px; }
 .section-head h2 { font-size: clamp(26px, 3.6vw, 36px); }
 .section-head p { color: var(--ink-soft); margin-top: 12px; font-size: 16px; }
@@ -264,7 +264,7 @@ textarea.edit { min-height: 70px; resize: vertical; line-height: 1.5; }
 .summary-card p:last-child { margin: 0; }
 
 /* LEGAL */
-.legal { padding: 48px 0 72px; }
+.legal { padding-block: 48px 72px; }
 .legal h1 { font-size: clamp(28px, 4vw, 38px); margin-bottom: 8px; }
 .legal h2 { font-size: 20px; margin: 30px 0 10px; }
 .legal p, .legal li { color: var(--ink); font-size: 15px; }

@@ -1,9 +1,13 @@
 export const BRAND = {
   /** Nombre de la plataforma. */
-  product: "Conócete",
+  product: "LucernaPsi",
   /** Línea de respaldo bajo el nombre. */
-  endorsement: "por Laura Rubio · Psicóloga",
-  domain: "conocetepsico.com",
+  endorsement: "por Laura Rubio · Psicología del Bienestar",
+  /** Nombre comercial completo. */
+  commercialName: "LucernaPsi, por Laura Rubio · Psicología del Bienestar",
+  /** Monograma tipo sello. */
+  monogram: "L",
+  domain: "lucernapsi.com",
   name: "Laura Rubio",
   fullName: "Laura Rubio Angarita",
   tagline: "Psicología del bienestar",

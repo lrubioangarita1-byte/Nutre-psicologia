@@ -14,7 +14,7 @@ export function Wave({ className = "wave" }: { className?: string }) {
 export function Brand() {
   return (
     <Link href="/" className="brand">
-      <span className="mono">LR</span>
+      <span className="mono">{BRAND.monogram}</span>
       <span>
         {BRAND.product}
         <span className="sub">{BRAND.endorsement.toUpperCase()}</span>

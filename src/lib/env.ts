@@ -23,7 +23,7 @@ export const env = {
       .map((e) => e.trim())
       .filter(Boolean),
   resendKey: () => process.env.RESEND_API_KEY || "",
-  emailFrom: () => process.env.EMAIL_FROM || "Conócete · Laura Rubio <informes@conocetepsico.com>",
+  emailFrom: () => process.env.EMAIL_FROM || "LucernaPsi · Laura Rubio <informes@lucernapsi.com>",
   emailReplyTo: () => process.env.EMAIL_REPLY_TO || "Lrubioangarita1@gmail.com",
   stripeSecret: () => process.env.STRIPE_SECRET_KEY || "",
   stripeWebhookSecret: () => process.env.STRIPE_WEBHOOK_SECRET || "",

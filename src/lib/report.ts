@@ -286,7 +286,7 @@ export function renderReportHtml(d: ReportDraft, sentAt: Date): string {
 <body style="margin:0;padding:0;background:${C.cream};color:${C.ink};font-family:${sans};line-height:1.6">
 <div style="max-width:640px;margin:0 auto;padding:28px 18px">
   <div style="text-align:center;margin-bottom:20px">
-    <div style="display:inline-block;width:46px;height:46px;line-height:46px;border-radius:50%;border:1px solid ${C.olive};font-family:${serif};font-style:italic;font-weight:600;color:${C.olive};font-size:17px">LR</div>
+    <div style="display:inline-block;width:46px;height:46px;line-height:46px;border-radius:50%;border:1px solid ${C.olive};font-family:${serif};font-style:italic;font-weight:600;color:${C.olive};font-size:20px">${escapeHtml(BRAND.monogram)}</div>
     <div style="font-family:${serif};font-weight:700;color:${C.olive};font-size:18px;margin-top:6px">${escapeHtml(BRAND.product)}</div>
     <div style="font-size:10px;letter-spacing:.14em;color:${C.inkSoft};font-weight:600">${escapeHtml(BRAND.endorsement.toUpperCase())}</div>
   </div>
