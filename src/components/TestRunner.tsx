@@ -12,7 +12,9 @@ import {
   type Responses,
   type Scores,
 } from "@/lib/instruments";
-import { PACKS, type PackId } from "@/lib/packs";
+import { computeScores } from "@/lib/instruments";
+import { PACKS, packInstrumentIds, type PackId } from "@/lib/packs";
+import { buildReportDraft, renderReportHtml } from "@/lib/report";
 import { CrisisBox, Results } from "./Results";
 import { InstrumentIconSvg } from "./InstrumentIcon";
 
@@ -22,6 +24,8 @@ type Props = {
   clientName: string;
   initialResponses: Responses;
   initialSafety: boolean | null;
+  /** Modo demostración (solo panel): no guarda nada, no notifica y muestra el informe al final. */
+  demo?: boolean;
 };
 
 type Step = { kind: "inst"; idx: number } | { kind: "safety" };
@@ -32,7 +36,7 @@ function isComplete(inst: Instrument, r: Responses) {
   return Boolean(arr && arr.length === inst.items.length && arr.every((v) => v !== null && v !== undefined));
 }
 
-export function TestRunner({ token, packId, clientName, initialResponses, initialSafety }: Props) {
+export function TestRunner({ token, packId, clientName, initialResponses, initialSafety, demo = false }: Props) {
   const pack = PACKS[packId];
   const steps: Step[] = useMemo(
     () => [...pack.instruments.map((_, idx) => ({ kind: "inst" as const, idx })), ...(pack.clinical ? [{ kind: "safety" as const }] : [])],
@@ -60,7 +64,7 @@ export function TestRunner({ token, packId, clientName, initialResponses, initia
   latest.current = responses;
 
   const flush = useCallback(() => {
-    if (!dirty.current) return;
+    if (demo || !dirty.current) return;
     dirty.current = false;
     fetch(`/api/evaluacion/${token}/progreso`, {
       method: "POST",
@@ -70,7 +74,7 @@ export function TestRunner({ token, packId, clientName, initialResponses, initia
     }).catch(() => {
       dirty.current = true;
     });
-  }, [token]);
+  }, [token, demo]);
 
   useEffect(() => {
     if (!dirty.current) return;
@@ -136,6 +140,10 @@ export function TestRunner({ token, packId, clientName, initialResponses, initia
     setSafety(yes);
     setSafetySaved(false);
     setError("");
+    if (demo) {
+      setSafetySaved(true);
+      return;
+    }
     for (let attempt = 0; attempt < 4; attempt++) {
       try {
         const res = await fetch(`/api/evaluacion/${token}/seguridad`, {
@@ -158,6 +166,15 @@ export function TestRunner({ token, packId, clientName, initialResponses, initia
   async function finish() {
     setBusy(true);
     setError("");
+    if (demo) {
+      try {
+        setResult({ scores: computeScores(packInstrumentIds(pack), latest.current), crisis: safety === true });
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Faltan respuestas.");
+      }
+      setBusy(false);
+      return;
+    }
     try {
       const res = await fetch(`/api/evaluacion/${token}/finalizar`, {
         method: "POST",
@@ -183,7 +200,29 @@ export function TestRunner({ token, packId, clientName, initialResponses, initia
   /* ---------- Render ---------- */
   let body: React.ReactNode;
   if (result) {
-    body = <Results pack={pack} scores={result.scores} crisis={result.crisis} />;
+    body = (
+      <>
+        <Results pack={pack} scores={result.scores} crisis={result.crisis} />
+        {demo && (
+          <div style={{ marginTop: 28 }}>
+            <div className="app-h">Así se vería el informe por correo</div>
+            <p className="app-sub">
+              Este es el borrador automático, antes de que lo edites. Con un cliente real lo revisas y ajustas en el panel antes de
+              enviarlo{result.crisis ? "; además te llegaría de inmediato un correo URGENTE por la respuesta de seguridad" : ""}.
+            </p>
+            <iframe
+              title="Vista del informe"
+              sandbox=""
+              srcDoc={renderReportHtml(
+                buildReportDraft({ packId, clientName, referredBy: null, scores: result.scores }),
+                new Date(),
+              )}
+              style={{ width: "100%", height: 900, border: "1px solid var(--line)", borderRadius: 12, background: "#fff" }}
+            />
+          </div>
+        )}
+      </>
+    );
   } else if (step.kind === "safety") {
     body = (
       <div>
@@ -275,6 +314,12 @@ export function TestRunner({ token, packId, clientName, initialResponses, initia
         <span className="brand-mini"><span className="mono">{BRAND.monogram}</span> {BRAND.product}</span>
         <span className="step-label">{label}</span>
       </div>
+      {demo && (
+        <div style={{ background: "var(--coral)", color: "#fff", textAlign: "center", fontSize: 13, fontWeight: 700, padding: "8px 16px" }}>
+          Modo demostración: así lo ve tu cliente. No se guarda nada ni se envían correos ·{" "}
+          <a href="/admin" style={{ color: "#fff" }}>Volver al panel</a>
+        </div>
+      )}
       <div className="app-body">
         <div className="app-progress"><div className="app-progress-fill" style={{ width: `${progressPct}%` }} /></div>
         {stepIdx === 0 && phase === "intro" && !result && (

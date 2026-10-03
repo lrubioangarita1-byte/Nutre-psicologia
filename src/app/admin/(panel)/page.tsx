@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/supabase/admin";
-import { getPack } from "@/lib/packs";
+import { getPack, PACKS } from "@/lib/packs";
 import type { Submission } from "@/lib/submissions";
 import { configStatus } from "@/lib/env";
 
@@ -77,6 +77,21 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
           ))}
         </ul>
       </details>
+      <div className="card">
+        <b>Ver como cliente</b>
+        <p className="muted" style={{ margin: "4px 0 12px" }}>
+          Recorre una prueba completa tal como la ve tu cliente, con resultados e informe. En modo demostración no se guarda nada ni se
+          envían correos.
+        </p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <a className="tab" href="/" target="_blank" rel="noopener">Página de inicio ↗</a>
+          {Object.values(PACKS)
+            .filter((p) => p.status === "disponible")
+            .map((p) => (
+              <Link key={p.id} className="tab" href={`/admin/demo/${p.id}`}>{p.name}</Link>
+            ))}
+        </div>
+      </div>
       <h1 style={{ fontSize: 26 }}>Casos</h1>
       {openCrisis && openCrisis.length > 0 && (
         <div className="alert-box" style={{ marginTop: 16 }}>

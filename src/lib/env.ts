@@ -53,7 +53,7 @@ export function configStatus() {
     { name: "Pagos en pesos (Wompi)", ok: p.wompi, needed: "Al menos un medio de pago" },
     { name: "Webhook de Wompi", ok: Boolean(env.wompiEventsSecret()), needed: "Recomendado (pagos PSE pendientes)" },
     { name: "Pagos en dólares (Stripe)", ok: p.stripe, needed: "Opcional" },
-    { name: "Webhook de Stripe", ok: !p.stripe || Boolean(env.stripeWebhookSecret()), needed: "Recomendado si usas Stripe" },
+    ...(p.stripe ? [{ name: "Webhook de Stripe", ok: Boolean(env.stripeWebhookSecret()), needed: "Recomendado" }] : []),
     { name: "Dominio propio", ok: Boolean(process.env.NEXT_PUBLIC_SITE_URL), needed: SITE_URL },
   ];
 }
