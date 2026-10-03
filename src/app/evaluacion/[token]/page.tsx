@@ -1,11 +1,13 @@
 import { BRAND } from "@/lib/brand";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getSubmissionByToken } from "@/lib/submissions";
+import { getSubmissionByToken, hasConsent } from "@/lib/submissions";
 import { getPack, type PackId } from "@/lib/packs";
 import { TestRunner } from "@/components/TestRunner";
 import { Results } from "@/components/Results";
 import { Brand } from "@/components/Site";
+import { ConsentGate } from "@/components/ConsentGate";
+import { ClinicalAddendum, ConsentSummary } from "@/content/legal/consentimiento";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Tu evaluación", robots: { index: false, follow: false } };
@@ -26,6 +28,15 @@ export default async function EvaluationPage({ params }: { params: Promise<{ tok
         </p>
         <a className="btn btn-primary" href={`/evaluacion/${token}`}>Recargar</a>
       </main>
+    );
+  }
+
+  if (sub.estado === "en_progreso" && !hasConsent(sub)) {
+    return (
+      <ConsentGate token={token} clientName={sub.cliente_nombre} packName={pack.name} clinical={pack.clinical}>
+        <ConsentSummary />
+        {pack.clinical && <ClinicalAddendum />}
+      </ConsentGate>
     );
   }
 

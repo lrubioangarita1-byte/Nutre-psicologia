@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { rateLimited } from "@/lib/rate-limit";
 import { db } from "@/lib/supabase/admin";
 import { getPack, packInstrumentIds, type PackId } from "@/lib/packs";
-import { caseInfo, getSubmissionByToken } from "@/lib/submissions";
+import { caseInfo, getSubmissionByToken, hasConsent } from "@/lib/submissions";
 import { computeScores, elevatedFlags, riskLevel } from "@/lib/instruments";
 import { sanitizeResponses } from "@/lib/validate";
 import { buildReportDraft } from "@/lib/report";
@@ -19,6 +19,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ token: string 
   const sub = await getSubmissionByToken(token);
   const pack = sub && getPack(sub.pack_id);
   if (!sub || !pack) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+  if (!hasConsent(sub)) return NextResponse.json({ error: "Primero debes aceptar el consentimiento informado" }, { status: 403 });
 
   if (sub.estado !== "en_progreso") {
     if (sub.puntajes) return NextResponse.json({ scores: sub.puntajes, crisis: sub.nivel_riesgo === "crisis" });

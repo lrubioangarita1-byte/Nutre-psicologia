@@ -51,3 +51,8 @@ export function caseInfo(s: Submission): CaseInfo {
     remitido_por: s.remitido_por,
   };
 }
+
+/** ¿La persona ya aceptó el consentimiento? (Las evaluaciones compradas lo aceptan en la compra.) */
+export function hasConsent(s: Submission) {
+  return (s.aceptacion?.documentos ?? ["consentimiento_informado"]).includes("consentimiento_informado");
+}

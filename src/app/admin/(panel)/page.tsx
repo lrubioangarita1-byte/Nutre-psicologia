@@ -3,6 +3,8 @@ import { db } from "@/lib/supabase/admin";
 import { getPack, PACKS } from "@/lib/packs";
 import type { Submission } from "@/lib/submissions";
 import { configStatus } from "@/lib/env";
+import { requireAdmin } from "@/lib/supabase/server";
+import { CourtesyForm } from "./CourtesyForm";
 
 const TABS = {
   pendientes: { label: "Pendientes de revisión", estados: ["pendiente", "revisado"] },
@@ -58,6 +60,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
     .eq("nivel_riesgo", "crisis")
     .eq("estado", "en_progreso");
 
+  const adminEmail = await requireAdmin();
   const status = configStatus();
   const missingRequired = status.some((c) => !c.ok && c.needed.startsWith("Obligatorio"));
   const testMode = (process.env.WOMPI_PUBLIC_KEY ?? "").startsWith("pub_test_") || (process.env.STRIPE_SECRET_KEY ?? "").startsWith("sk_test_");
@@ -92,6 +95,10 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
             ))}
         </div>
       </div>
+      <CourtesyForm
+        defaultEmail={adminEmail}
+        packs={Object.values(PACKS).filter((p) => p.status === "disponible").map((p) => ({ id: p.id, name: p.name }))}
+      />
       <h1 style={{ fontSize: 26 }}>Casos</h1>
       {openCrisis && openCrisis.length > 0 && (
         <div className="alert-box" style={{ marginTop: 16 }}>

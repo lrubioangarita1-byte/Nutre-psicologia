@@ -6,6 +6,9 @@ import { authClient, isAdminEmail, requireAdmin } from "@/lib/supabase/server";
 import { db } from "@/lib/supabase/admin";
 import { renderReportHtml, type ReportDraft } from "@/lib/report";
 import { sendEmail } from "@/lib/email";
+import { getAvailablePack } from "@/lib/packs";
+import { CONSENT_VERSION, newAccessToken } from "@/lib/submissions";
+import { evaluationUrl, unlockSubmission } from "@/lib/payments";
 
 export async function signIn(_prev: { error?: string } | undefined, form: FormData) {
   const email = String(form.get("email") || "").trim();
@@ -82,4 +85,48 @@ export async function markRiskReviewed(eventId: string, submissionId: string) {
     .eq("id", eventId)
     .is("revisado_at", null);
   revalidatePath(`/admin/casos/${submissionId}`);
+}
+
+/**
+ * Crea una evaluación sin pago (cortesía o prueba) y devuelve su enlace.
+ * Solo la administradora. Queda registrada con proveedor de pago "prueba" y monto 0.
+ */
+export async function createCourtesyEvaluation(
+  _prev: { error?: string; url?: string } | undefined,
+  form: FormData,
+): Promise<{ error?: string; url?: string }> {
+  const admin = await requireAdmin();
+  const pack = getAvailablePack(String(form.get("packId") || ""));
+  const nombre = String(form.get("nombre") || "").trim().slice(0, 120);
+  const correo = String(form.get("correo") || "").trim().toLowerCase().slice(0, 200);
+  const whatsapp = String(form.get("whatsapp") || "").replace(/[^\d+]/g, "").slice(0, 30);
+  const remitidoPor = String(form.get("remitidoPor") || "").trim().slice(0, 160);
+  if (!pack) return { error: "Elige un pack." };
+  if (nombre.length < 2) return { error: "Escribe el nombre." };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo)) return { error: "Escribe un correo válido." };
+
+  const now = new Date().toISOString();
+  const token = newAccessToken();
+  const { data: sub, error } = await db()
+    .from("submissions")
+    .insert({
+      access_token: token,
+      pack_id: pack.id,
+      cliente_nombre: nombre,
+      cliente_correo: correo,
+      cliente_whatsapp: whatsapp || null,
+      remitido_por: remitidoPor || null,
+      consentimiento_version: CONSENT_VERSION,
+      consentimiento_aceptado_at: now,
+      // El consentimiento lo acepta la persona en su primera pantalla; aquí solo queda quién creó el acceso.
+      aceptacion: { version: CONSENT_VERSION, fecha: now, documentos: ["acceso_creado_por_administradora"], creado_por: admin, ip: null, user_agent: null },
+    })
+    .select("id")
+    .single();
+  if (error || !sub) return { error: "No se pudo crear la evaluación." };
+
+  await db().from("payments").insert({ submission_id: sub.id, monto: 0, moneda: "COP", proveedor: "prueba", estado: "aprobado" });
+  await unlockSubmission(sub.id);
+  revalidatePath("/admin");
+  return { url: evaluationUrl(token) };
 }
