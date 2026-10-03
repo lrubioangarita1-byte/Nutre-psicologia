@@ -12,7 +12,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     <>
       <div className="admin-top">
         <Link href="/admin" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <span className="mono">LR</span> Panel · Laura Rubio Psicología
+          <span className="mono">LR</span> Panel · Conócete
         </Link>
         <form action={signOut} style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <span style={{ opacity: 0.8 }}>{email}</span>

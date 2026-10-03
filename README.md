@@ -1,4 +1,4 @@
-# Laura Rubio · Psicología del Bienestar
+# Conócete — por Laura Rubio · Psicóloga
 
 Plataforma de evaluación psicológica online: el cliente paga, responde un pack de pruebas psicométricas y recibe por correo, en 12–24 h, un informe personalizado revisado y aprobado por Laura Rubio Angarita (Psicóloga, TP 196983).
 

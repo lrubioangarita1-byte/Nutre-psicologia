@@ -1,4 +1,9 @@
 export const BRAND = {
+  /** Nombre de la plataforma. */
+  product: "Conócete",
+  /** Línea de respaldo bajo el nombre. */
+  endorsement: "por Laura Rubio · Psicóloga",
+  domain: "conocetepsico.com",
   name: "Laura Rubio",
   fullName: "Laura Rubio Angarita",
   tagline: "Psicología del bienestar",

@@ -271,7 +271,7 @@ export function TestRunner({ token, packId, clientName, initialResponses, initia
   return (
     <div>
       <div className="app-bar">
-        <span className="brand-mini"><span className="mono">LR</span> Laura Rubio</span>
+        <span className="brand-mini"><span className="mono">LR</span> Conócete</span>
         <span className="step-label">{label}</span>
       </div>
       <div className="app-body">

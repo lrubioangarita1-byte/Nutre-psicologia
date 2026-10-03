@@ -43,7 +43,7 @@ export default async function EvaluationPage({ params }: { params: Promise<{ tok
   return (
     <div>
       <div className="app-bar">
-        <span className="brand-mini"><span className="mono">LR</span> Laura Rubio</span>
+        <span className="brand-mini"><span className="mono">LR</span> Conócete</span>
         <span className="step-label">{sub.estado === "enviado" ? "Informe enviado" : "En revisión"}</span>
       </div>
       <div className="app-body">

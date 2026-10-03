@@ -12,7 +12,7 @@ Esta guía es para Laura: está en orden y sin términos técnicos innecesarios.
 | Resend | Envía los correos (informes y alertas de crisis) | Gratis hasta 3.000 correos/mes (100 por día) |
 | Wompi | Cobros en pesos (PSE, Nequi, tarjetas) | Sin mensualidad. Solo cobra una comisión por cada venta |
 | Stripe | Cobros en dólares | Sin mensualidad. **Ojo:** hasta donde sé, Stripe no abre cuentas a personas o empresas en Colombia. Puedes dejarlo apagado: el sitio funciona solo con Wompi |
-| Dominio (laurarubiopsicologia.com) | Tu dirección propia | ~10–15 USD al año. **Resend lo necesita para enviar correos a clientes** |
+| Dominio (conocetepsico.com) | Tu dirección propia | ~10–15 USD al año. **Resend lo necesita para enviar correos a clientes** |
 
 👉 **Puedes dejar todo listo sin pagar nada.** Cobran solo dos cosas, y únicamente cuando decidas abrir al público: el dominio y, si vas a cobrar a clientes, el plan Pro de Vercel.
 
@@ -40,7 +40,7 @@ Esta guía es para Laura: está en orden y sin términos técnicos innecesarios.
 ## Paso 2 — Vercel (publicar) · Gratis para probar
 
 1. **vercel.com** → *Sign Up* → *Continue with GitHub*.
-2. *Add New… → Project* → busca `nutre-psicologia` → **Import**.
+2. *Add New… → Project* → busca tu repositorio → **Import**. En **Project Name** escribe `conocetepsico`.
 3. Abre **Environment Variables** y agrega:
 
    | Nombre | Valor |
@@ -51,7 +51,7 @@ Esta guía es para Laura: está en orden y sin términos técnicos innecesarios.
    | `ADMIN_EMAILS` | `lrubioangarita1@gmail.com` |
    | `ALERT_EMAILS` | `lrubioangarita1@gmail.com` |
 
-4. Pulsa **Deploy**. En ~2 minutos tendrás una dirección como `nutre-psicologia.vercel.app`.
+4. Pulsa **Deploy**. En ~2 minutos tendrás una dirección como `conocetepsico.vercel.app`.
 5. Entra a `…vercel.app/admin`, inicia sesión y revisa la tarjeta **"Estado para publicar"**: te dice qué falta.
 
 ## Paso 3 — Resend (correos) · Gratis
@@ -60,7 +60,7 @@ Esta guía es para Laura: está en orden y sin términos técnicos innecesarios.
 2. *API Keys → Create API Key* → cópiala en Vercel como `RESEND_API_KEY`.
 3. **Sin dominio propio**, Resend solo deja enviar correos a tu propio correo. Sirve para probar.
 4. **Con dominio**: *Domains → Add domain*, copia los registros DNS donde compraste el dominio y, cuando aparezca *Verified*, agrega en Vercel:
-   - `EMAIL_FROM` = `Laura Rubio · Psicología <informes@tudominio.com>`
+   - `EMAIL_FROM` = `Conócete · Laura Rubio <informes@conocetepsico.com>`
    - `EMAIL_REPLY_TO` = `Lrubioangarita1@gmail.com`
 
 ## Paso 4 — Wompi (pagos en pesos) · Sin mensualidad

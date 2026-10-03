@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Laura Rubio · Psicología del Bienestar — Evaluación psicológica online con informe en 12–24 h";
+export const alt = "Conócete, por Laura Rubio · Psicóloga — Evaluación psicológica online con informe en 12–24 h";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -11,8 +11,8 @@ export default function Image() {
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
           <div style={{ width: 96, height: 96, borderRadius: 48, border: "3px solid #5B5120", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, fontStyle: "italic" }}>LR</div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 44, fontWeight: 700 }}>Laura Rubio</div>
-            <div style={{ fontSize: 22, letterSpacing: 6, color: "#6B6135" }}>PSICOLOGÍA DEL BIENESTAR</div>
+            <div style={{ fontSize: 48, fontWeight: 700 }}>Conócete</div>
+            <div style={{ fontSize: 22, letterSpacing: 5, color: "#6B6135" }}>POR LAURA RUBIO · PSICÓLOGA</div>
           </div>
         </div>
         <div style={{ display: "flex", fontSize: 72, fontWeight: 700, marginTop: 60, lineHeight: 1.1 }}>

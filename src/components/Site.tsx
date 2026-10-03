@@ -16,8 +16,8 @@ export function Brand() {
     <Link href="/" className="brand">
       <span className="mono">LR</span>
       <span>
-        {BRAND.name}
-        <span className="sub">PSICOLOGÍA DEL BIENESTAR</span>
+        {BRAND.product}
+        <span className="sub">{BRAND.endorsement.toUpperCase()}</span>
       </span>
     </Link>
   );
